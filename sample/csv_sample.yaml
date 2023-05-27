@@ -1,0 +1,28 @@
+reader:
+  groceries_ds:
+    type: "csv_batch"
+    path: 'D:\Workspace\Kaggle\Grocery\Groceries_dataset.csv'
+    header: true
+    infer_schema: true
+    view_name: "vw_groceries"
+transformation:
+  add_current_timestamp_col:
+    type: "sql_step"
+    query: "select *,current_timestamp() as ingested_date from vw_groceries "
+    view_name: "vw_add_current_timestamp"
+
+  add_is_active_col:
+    type: "sql_step"
+    query: "select *,'1' as is_active from vw_add_current_timestamp"
+    view_name: "vw_add_is_active"
+  add_partitioned_col:
+    type: "sql_step"
+    query: "select *,year(ingested_date) as year,month(ingested_date) as month from vw_add_current_timestamp"
+    view_name: "vw_add_partitioned"
+writer:
+  writer_1:
+    write_view_name: "vw_add_partitioned"
+    type: "delta_batch"
+    path: 'D:\Workspace\Kaggle\Grocery_Delta'
+    mode: "append"
+    partition_by: [ "year","month" ]

@@ -1,0 +1,28 @@
+reader:
+  source_1:
+    type: "delta_batch"
+    path: "some_path"
+    view_name: "vw_source1"
+  source_2:
+    type: "delta_batch"
+    path: "some_path"
+    view_name: "vw_source2"
+
+transformation:
+  add_one_col:
+    type: "sql_step"
+    query: "select * from vw_source1 "
+    view_name: "vw_add_one_col"
+
+  add_another_col:
+    type: "sql_step"
+    query: "select * from vw_add_one_col"
+    view_name: "vw_add_another_col"
+
+writer:
+  writer_1:
+    write_view_name: "vw_add_another_col"
+    type: "delta_batch"
+    path: "some_path"
+    mode: "append"
+    partition_by: [ "year","month","day" ]
